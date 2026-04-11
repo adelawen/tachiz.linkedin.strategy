@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tachiz LinkedIn Strategy System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #E87722;
+  --orange-light: #FF9A40;
+  --orange-dark: #C45F0A;
+  --navy: #0D1B2E;
+  --navy-light: #152338;
+  --navy-mid: #1E3050;
+  --white: #FFFFFF;
+  --gray-100: #F5F4F0;
+  --gray-200: #E8E6E0;
+  --gray-400: #9A9690;
+  --gray-600: #5C5850;
+  --text: #1A1814;
+  --radius: 12px;
+  --radius-lg: 20px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: rgba(13,27,46,0.95);
+  border-bottom: 1px solid rgba(232,119,34,0.2);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--orange);
+  letter-spacing: -0.5px;
+}
+.logo span { color: var(--white); }
+
+.api-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.api-label {
+  font-size: 11px;
+  color: var(--gray-400);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.api-input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(232,119,34,0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  width: 280px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.api-input:focus { border-color: var(--orange); }
+.api-input::placeholder { color: var(--gray-600); }
+.api-status {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gray-600);
+  transition: background 0.3s;
+}
+.api-status.ok { background: #4CAF50; }
+
+/* ── TABS ── */
+.tabs-wrapper {
+  display: flex;
+  gap: 0;
+  padding: 0 24px;
+  background: var(--navy-light);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  overflow-x: auto;
+}
+.tab-btn {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+.tab-btn:hover { color: var(--white); }
+.tab-btn.active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+.tab-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(232,119,34,0.15);
+  color: var(--orange);
+  font-size: 10px;
+  margin-right: 6px;
+}
+.tab-btn.active .tab-num { background: var(--orange); color: var(--white); }
+
+/* ── PAGE CONTAINER ── */
+.page { display: none; padding: 32px 24px; max-width: 1100px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ── SECTION HEADER ── */
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+.section-sub {
+  color: var(--gray-400);
+  font-size: 14px;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+.orange { color: var(--orange); }
+
+/* ── CARD ── */
+.card {
+  background: var(--navy-light);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: var(--orange);
+  border-radius: 2px;
+}
+
+/* ── FORM ELEMENTS ── */
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+input[type="text"], textarea, select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+}
+input[type="text"]:focus, textarea:focus, select:focus {
+  border-color: var(--orange);
+  background: rgba(232,119,34,0.05);
+}
+textarea { min-height: 120px; line-height: 1.6; }
+select option { background: var(--navy-mid); }
+
+.form-row { margin-bottom: 18px; }
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary {
+  background: var(--orange);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--orange-light); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.btn-sm { padding: 8px 16px; font-size: 12px; }
+
+/* ── THEME TOGGLE ── */
+.theme-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.theme-opt {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius);
+  border: 2px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+.theme-opt.dark-opt {
+  background: #0D1B2E;
+  color: var(--orange);
+}
+.theme-opt.light-opt {
+  background: #F5F4F0;
+  color: #E87722;
+}
+.theme-opt.selected { border-color: var(--orange); }
+
+/* ── SLIDE PREVIEW ── */
+.slides-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.slide-preview {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.08);
+  position: relative;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.slide-preview:hover { border-color: var(--orange); }
+.slide-preview.dark-theme { background: #0D1B2E; }
+.slide-preview.light-theme { background: #F5F4F0; }
+.slide-preview-inner {
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.sp-tag {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  display: inline-block;
+  width: fit-content;
+}
+.dark-theme .sp-tag { background: var(--orange); color: var(--white); }
+.light-theme .sp-tag { background: var(--orange); color: var(--white); }
+.sp-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.dark-theme .sp-title { color: var(--white); }
+.light-theme .sp-title { color: #1A1814; }
+.sp-body {
+  font-size: 9px;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+.dark-theme .sp-body { color: rgba(255,255,255,0.6); }
+.light-theme .sp-body { color: #5C5850; }
+.sp-num {
+  font-size: 8px;
+  text-align: right;
+  opacity: 0.4;
+}
+.dark-theme .sp-num { color: var(--white); }
+.light-theme .sp-num { color: #1A1814; }
+.sp-data {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--orange);
+}
+
+/* ── AI LOADING ── */
+.ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(232,119,34,0.08);
+  border-radius: var(--radius);
+  border: 1px solid rgba(232,119,34,0.2);
+  font-size: 13px;
+  color: var(--orange);
+}
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(232,119,34,0.2);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── HASHTAG CHIPS ── */
+.hashtag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.hashtag-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: rgba(232,119,34,0.12);
+  border: 1px solid rgba(232,119,34,0.3);
+  color: var(--orange);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.hashtag-chip:hover { background: rgba(232,119,34,0.25); }
+.hashtag-chip.selected { background: var(--orange); color: var(--white); }
+
+/* ── TIME SLOTS ── */
+.time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.time-slot {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--gray-400);
+}
+.time-slot:hover { border-color: var(--orange); color: var(--white); }
+.time-slot.selected { background: var(--orange); border-color: var(--orange); color: var(--white); }
+.time-slot-badge {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 9px;
+  background: rgba(255,255,255,0.2);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* ── ACCOUNT CARDS ── */
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.account-card {
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 2px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.account-card:hover { border-color: rgba(232,119,34,0.4); }
+.account-card.selected { border-color: var(--orange); background: rgba(232,119,34,0.07); }
+.account-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--white);
+  flex-shrink: 0;
+}
+.account-name { font-size: 13px; font-weight: 500; }
+.account-role { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+
+/* ══════════════════════════════════════════
+   PAGE 3 — LINKEDIN MOCK
+══════════════════════════════════════════ */
+.li-feed {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.li-post {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  color: #1A1814;
+}
+.li-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 16px 10px;
+}
+.li-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 16px;
+  color: var(--white); flex-shrink: 0;
+}
+.li-meta { flex: 1; }
+.li-name { font-size: 15px; font-weight: 600; color: #1A1814; }
+.li-title { font-size: 12px; color: #5C5850; margin-top: 1px; }
+.li-time { font-size: 11px; color: #9A9690; margin-top: 1px; }
+.li-follow {
+  font-size: 14px; font-weight: 600; color: #0A66C2;
+  background: none; border: none; cursor: pointer;
+}
+.li-body {
+  padding: 0 16px 12px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #1A1814;
+}
+.li-body .hl { font-weight: 600; }
+.li-body .tag { color: #0A66C2; }
+
+/* Carousel */
+.li-carousel {
+  position: relative;
+  background: #0D1B2E;
+  overflow: hidden;
+}
+.li-track {
+  display: flex;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+.li-slide {
+  min-width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+.li-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.li-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: white;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s;
+}
+.li-nav:hover { background: rgba(0,0,0,0.75); }
+.li-nav:disabled { opacity: 0.2; cursor: default; }
+.li-prev { left: 10px; }
+.li-next { right: 10px; }
+.li-progress {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.15);
+}
+.li-progress-bar {
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.35s;
+}
+.li-dots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 0 6px;
+  background: var(--white);
+}
+.li-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #D0CEC8;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.li-dot.active {
+  background: var(--orange);
+  width: 18px;
+  border-radius: 3px;
+}
+
+/* Reactions */
+.li-stats {
+  padding: 6px 16px;
+  font-size: 13px;
+  color: #5C5850;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #E8E6E0;
+  background: var(--white);
+}
+.li-actions {
+  display: flex;
+  background: var(--white);
+}
+.li-action {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: #5C5850;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.li-action:hover { background: #F5F4F0; }
+.li-action.liked { color: #0A66C2; }
+.li-action.saved { color: var(--orange); }
+
+/* Comment */
+.li-comments {
+  background: var(--white);
+  border-top: 1px solid #E8E6E0;
+  padding: 12px 16px;
+}
+.li-comment-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.li-comment-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: #E8E6E0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #5C5850;
+  flex-shrink: 0;
+}
+.li-comment-bubble {
+  background: #F5F4F0;
+  border-radius: 0 12px 12px 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #1A1814;
+  line-height: 1.5;
+}
+.li-comment-name { font-weight: 600; font-size: 12px; margin-bottom: 2px; }
+.li-first-comment {
+  background: #FFF8F3;
+  border: 1px solid rgba(232,119,34,0.2);
+  border-left: 3px solid var(--orange);
+  border-radius: 0 8px 8px 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #1A1814;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.li-first-comment-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--orange);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.li-first-comment a { color: #0A66C2; cursor: pointer; }
+.li-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+.li-comment-input {
+  flex: 1;
+  background: #F5F4F0;
+  border: 1px solid #E8E6E0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #1A1814;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+.li-comment-input:focus { border-color: #0A66C2; background: var(--white); }
+.li-comment-send {
+  background: var(--orange);
+  border: none;
+  color: var(--white);
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.li-comment-list { margin-top: 8px; }
+
+/* ══════════════════════════════════════════
+   PAGE 4 — SAMPLE / GUIDE
+══════════════════════════════════════════ */
+.step-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.step-item {
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+.step-item::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 40px;
+  bottom: -10px;
+  width: 2px;
+  background: rgba(232,119,34,0.2);
+}
+.step-item:last-child::before { display: none; }
+.step-num {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--orange);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 14px;
+  color: var(--white); flex-shrink: 0;
+  position: relative; z-index: 1;
+}
+.step-content {
+  flex: 1;
+  padding-bottom: 24px;
+}
+.step-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.step-desc {
+  font-size: 13px;
+  color: var(--gray-400);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.prompt-box {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(232,119,34,0.2);
+  border-left: 3px solid var(--orange);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.85);
+  font-family: 'DM Sans', sans-serif;
+}
+.prompt-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--orange);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Sample post mini */
+.sample-post-mini {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  color: #1A1814;
+  max-width: 480px;
+}
+.sample-carousel-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  background: #0D1B2E;
+}
+.sample-carousel-thumb {
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+.sample-carousel-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.sample-carousel-thumb:hover img { opacity: 1; }
+.sample-result-note {
+  background: rgba(232,119,34,0.08);
+  border: 1px solid rgba(232,119,34,0.2);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.8);
+  margin-top: 12px;
+}
+.sample-result-note strong { color: var(--orange); }
+
+.algo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 3px;
+}
+.algo-badge.green { background: rgba(76,175,80,0.15); color: #4CAF50; border: 1px solid rgba(76,175,80,0.3); }
+.algo-badge.orange { background: rgba(232,119,34,0.15); color: var(--orange); border: 1px solid rgba(232,119,34,0.3); }
+
+/* ── SUCCESS TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--navy-mid);
+  border: 1px solid rgba(232,119,34,0.4);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  font-size: 14px;
+  color: var(--white);
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { font-size: 18px; }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .account-grid { grid-template-columns: 1fr; }
+  .slides-grid { grid-template-columns: repeat(2, 1fr); }
+  .sample-carousel-grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">Tachiz <span>LinkedIn OS</span></div>
+  <div class="api-row">
+    <span class="api-label">API Key</span>
+    <input class="api-input" type="password" id="apiKey" placeholder="sk-ant-api03-..." oninput="checkApiKey()" />
+    <div class="api-status" id="apiStatus"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrapper">
+  <button class="tab-btn active" onclick="switchTab(0)"><span class="tab-num">1</span>輪播圖製作器</button>
+  <button class="tab-btn" onclick="switchTab(1)"><span class="tab-num">2</span>發文系統</button>
+  <button class="tab-btn" onclick="switchTab(2)"><span class="tab-num">3</span>發文預覽</button>
+  <button class="tab-btn" onclick="switchTab(3)"><span class="tab-num">4</span>操作說明 &amp; Sample</button>
+</div>
+
+<!-- ══════ PAGE 1: CAROUSEL MAKER ══════ -->
+<div class="page active" id="page0">
+  <div class="section-title">AI <span class="orange">輪播圖</span>製作器</div>
+  <div class="section-sub">用自然語言描述想要的輪播圖，AI 幫你生成每張投影片內容。</div>
+
+  <div class="card">
+    <div class="card-title">主題設定</div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label>目標受眾</label>
+        <select id="carousel-audience">
+          <option value="RTD採購主管">RTD 採購主管</option>
+          <option value="R&D研發總監">R&D 研發總監</option>
+          <option value="FMCG品牌商">FMCG 品牌商</option>
+          <option value="供應鏈經理">供應鏈經理</option>
+          <option value="米其林主廚">米其林主廚</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>張數</label>
+        <select id="carousel-count">
+          <option value="6">6 張</option>
+          <option value="8" selected>8 張</option>
+          <option value="10">10 張</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>主題描述（用中文或英文自由描述）</label>
+      <textarea id="carousel-prompt" placeholder="例如：我想做一份針對 RTD 飲料採購主管的輪播圖，主題是我們的分子包覆技術，強調耐酸耐熱、6 個月保存期限，以及相比傳統珍珠的優勢。要有數據、有問題導入、最後有 CTA。"></textarea>
+    </div>
+    <div class="form-row">
+      <label>配色主題</label>
+      <div class="theme-toggle">
+        <div class="theme-opt dark-opt selected" id="theme-dark" onclick="selectTheme('dark')">
+          🌑 深色（深藍 + 橘）
+        </div>
+        <div class="theme-opt light-opt" id="theme-light" onclick="selectTheme('light')">
+          ☀️ 淺色（白底 + 橘）
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="generateCarousel()">✦ AI 生成輪播圖內容</button>
+  </div>
+
+  <div id="carousel-loading" style="display:none;" class="ai-loading">
+    <div class="spinner"></div>
+    <span>AI 正在生成輪播圖內容，請稍候...</span>
+  </div>
+
+  <div id="carousel-result" style="display:none;">
+    <div class="card">
+      <div class="card-title">預覽（點擊任一張可編輯）</div>
+      <div class="slides-grid" id="slides-grid"></div>
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="sendToPost()">→ 帶入發文系統</button>
+        <button class="btn btn-secondary btn-sm" onclick="generateCarousel()">↺ 重新生成</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 2: POST SYSTEM ══════ -->
+<div class="page" id="page1">
+  <div class="section-title">LinkedIn <span class="orange">發文系統</span></div>
+  <div class="section-sub">選擇發文帳號，讓 AI 幫你生成符合 2026 演算法的貼文文案。</div>
+
+  <div class="card">
+    <div class="card-title">發文帳號</div>
+    <div class="account-grid">
+      <div class="account-card selected" onclick="selectAccount(this, '創辦人', 'Founder & CEO · Tachiz 泰吉軒實業', 'CE')">
+        <div class="account-avatar">CE</div>
+        <div><div class="account-name">創辦人 / CEO</div><div class="account-role">思想領導力文章</div></div>
+      </div>
+      <div class="account-card" onclick="selectAccount(this, '國貿業務主管', 'International Sales Director · Tachiz', 'SA')">
+        <div class="account-avatar" style="background:#1E3050;">SA</div>
+        <div><div class="account-name">國貿業務主管</div><div class="account-role">技術 + 市場洞察</div></div>
+      </div>
+      <div class="account-card" onclick="selectAccount(this, 'R&D 研發總監', 'Head of R&D · Tachiz Tlab', 'RD')">
+        <div class="account-avatar" style="background:#2A1A0A;">RD</div>
+        <div><div class="account-name">R&D 研發總監</div><div class="account-role">技術深度內容</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">AI 文案生成</div>
+    <div class="form-row">
+      <label>本次發文重點（讓 AI 知道要強調什麼）</label>
+      <textarea id="post-brief" rows="3" placeholder="例如：重點推廣分子包覆技術，強調 RTD 市場的高門檻，吸引 R&D 與採購主管，最後引導索取 Sample Kit。"></textarea>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="btn btn-primary" onclick="generatePostCopy()">✦ AI 生成文案</button>
+      <span style="font-size:12px; color:var(--gray-400);">或直接在下方手動填寫</span>
+    </div>
+  </div>
+
+  <div id="post-loading" style="display:none;" class="ai-loading">
+    <div class="spinner"></div>
+    <span>AI 正在撰寫符合 LinkedIn 演算法的文案...</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">貼文內文</div>
+    <div class="form-row">
+      <textarea id="post-copy" rows="10" placeholder="文案將在此顯示，你也可以直接手動輸入..."></textarea>
+    </div>
+    <div class="form-row">
+      <label>第一則留言 CTA（連結放這裡，避免演算法降權）</label>
+      <input type="text" id="post-cta" value="📥 免費索取 Sample Kit + 完整 TDS 技術規格表：https://tachiz.com/sample-request" />
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Hashtag 選擇</div>
+    <div class="hashtag-list" id="hashtag-list">
+      <div class="hashtag-chip selected" onclick="toggleHashtag(this)">#FoodTech</div>
+      <div class="hashtag-chip selected" onclick="toggleHashtag(this)">#PoppingBoba</div>
+      <div class="hashtag-chip selected" onclick="toggleHashtag(this)">#B2BFoodIngredients</div>
+      <div class="hashtag-chip selected" onclick="toggleHashtag(this)">#FMCG</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#RTD</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#FoodInnovation</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#FoodScience</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#SupplyChain</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#MolecularGastronomy</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#FoodManufacturing</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#TaiwanFood</div>
+      <div class="hashtag-chip" onclick="toggleHashtag(this)">#LinkedInFood</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">最佳發文時間</div>
+    <div style="font-size:13px; color:var(--gray-400); margin-bottom:10px;">根據 2026 LinkedIn 演算法建議（台灣時間，針對全球 B2B 受眾）</div>
+    <div class="time-slots">
+      <div class="time-slot selected" onclick="selectTime(this)">週二 08:00 <span class="time-slot-badge">最佳</span></div>
+      <div class="time-slot" onclick="selectTime(this)">週二 12:00</div>
+      <div class="time-slot" onclick="selectTime(this)">週四 08:00 <span class="time-slot-badge">最佳</span></div>
+      <div class="time-slot" onclick="selectTime(this)">週四 17:00</div>
+      <div class="time-slot" onclick="selectTime(this)">週三 10:00</div>
+      <div class="time-slot" onclick="selectTime(this)">週五 09:00</div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:12px; padding-bottom:40px;">
+    <button class="btn btn-primary" style="padding:14px 36px; font-size:15px;" onclick="publishPost()">
+      ➤ 發布貼文
+    </button>
+    <button class="btn btn-secondary" onclick="switchTab(2)">預覽結果 →</button>
+  </div>
+</div>
+
+<!-- ══════ PAGE 3: LINKEDIN MOCK ══════ -->
+<div class="page" id="page2">
+  <div class="section-title">LinkedIn <span class="orange">發文結果</span></div>
+  <div class="section-sub">模擬貼文在 LinkedIn 上的真實呈現效果。</div>
+
+  <div class="li-feed">
+    <div class="li-post">
+      <!-- Header -->
+      <div class="li-header">
+        <div class="li-avatar" id="li-avatar">CE</div>
+        <div class="li-meta">
+          <div class="li-name" id="li-name">Tachiz CEO · 創辦人</div>
+          <div class="li-title" id="li-title">Founder & CEO · Tachiz 泰吉軒實業 · Global Popping Boba Manufacturer</div>
+          <div class="li-time">2h · 🌐 全球</div>
+        </div>
+        <button class="li-follow">+ 追蹤</button>
+      </div>
+
+      <!-- Body -->
+      <div class="li-body" id="li-body">
+        傳統配料的天花板，不是口味——是<span class="hl">技術相容性</span>。<br><br>
+        當你的爆珠無法在 RTD 瓶裝飲料中存活 6 個月，你就永遠進不了 FMCG 供應鏈。<br><br>
+        我們用 <span class="hl">Reverse Spherification 分子包覆技術</span>打破了這道牆。<br><br>
+        ✅ pH 3.5 酸性環境，膜結構完整<br>
+        ✅ 120°C 商業滅菌，RTD 產線相容<br>
+        ✅ 4°C 冷藏 6 個月，不硬化不褪色<br>
+        ✅ 酒精相容，精釀調酒市場全開放<br><br>
+        這不只是一顆爆珠——這是讓你的產品進入<span class="hl">高毛利藍海市場</span>的技術鑰匙。<br><br>
+        你最大的 RTD 開發挑戰是什麼？Texture 還是 Shelf Life？留言告訴我們 👇<br><br>
+        <span class="tag">#FoodTech</span> <span class="tag">#PoppingBoba</span> <span class="tag">#B2BFoodIngredients</span> <span class="tag">#FMCG</span> <span class="tag">#RTD</span>
+      </div>
+
+      <!-- Carousel -->
+      <div class="li-carousel">
+        <div class="li-track" id="li-track">
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/9.png" alt="Slide 1" loading="lazy" onerror="this.style.background='#1E3050'; this.style.display='flex'; this.style.alignItems='center'; this.style.justifyContent='center'; this.innerHTML='<span style=color:rgba(255,255,255,0.3)>圖片載入中...</span>'"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/10.png" alt="Slide 2" loading="lazy"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/11.png" alt="Slide 3" loading="lazy"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/12.png" alt="Slide 4" loading="lazy"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/13.png" alt="Slide 5" loading="lazy"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/14.png" alt="Slide 6" loading="lazy"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/15.png" alt="Slide 7" loading="lazy"></div>
+          <div class="li-slide"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/16.png" alt="Slide 8" loading="lazy"></div>
+        </div>
+        <button class="li-nav li-prev" id="li-prev" onclick="liSlide(-1)" disabled>‹</button>
+        <button class="li-nav li-next" id="li-next" onclick="liSlide(1)">›</button>
+        <div class="li-progress"><div class="li-progress-bar" id="li-progress-bar" style="width:12.5%"></div></div>
+      </div>
+      <div class="li-dots" id="li-dots"></div>
+
+      <!-- Stats -->
+      <div class="li-stats">
+        <span id="li-reactions">👍 ❤️ 💡 <span id="like-count">127</span></span>
+        <span>23 則留言 · 48 次轉發</span>
+      </div>
+
+      <!-- Actions -->
+      <div class="li-actions">
+        <button class="li-action" id="btn-like" onclick="toggleLiLike()">👍 讚</button>
+        <button class="li-action" onclick="focusLiComment()">💬 留言</button>
+        <button class="li-action" id="btn-save" onclick="toggleLiSave()">🔖 儲存</button>
+        <button class="li-action">↗ 轉發</button>
+      </div>
+
+      <!-- Comments -->
+      <div class="li-comments">
+        <div class="li-first-comment">
+          <div class="li-first-comment-label">📌 第一則留言 · 置頂 CTA</div>
+          <span id="li-cta-text">📥 免費索取 Sample Kit + 完整 TDS 技術規格表：<a>tachiz.com/sample-request</a><br><span style="color:#9A9690; font-size:12px;">（連結放留言區，避免 LinkedIn 演算法降權）</span></span>
+        </div>
+        <div class="li-comment-list" id="li-comment-list">
+          <div class="li-comment-row">
+            <div class="li-comment-avatar">RD</div>
+            <div><div class="li-comment-name">R&D Director · NestlÉ Asia</div><div class="li-comment-bubble">Impressive shelf life data. We've been struggling with acid stability in our yogurt line. Would love to see the full TDS. Leaving a comment to unlock 📊</div></div>
+          </div>
+          <div class="li-comment-row">
+            <div class="li-comment-avatar">PM</div>
+            <div><div class="li-comment-name">Procurement Manager · Uni-President</div><div class="li-comment-bubble">The RTD compatibility is exactly what we need for our new beverage line. Shelf life is our #1 challenge right now.</div></div>
+          </div>
+        </div>
+        <div class="li-input-row">
+          <div class="li-comment-avatar" style="background:#E8E6E0; color:#5C5850;">你</div>
+          <input class="li-comment-input" id="li-comment-input" placeholder="留言（按 Enter 送出）..." onkeydown="submitLiComment(event)" />
+          <button class="li-comment-send" onclick="sendLiComment()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Algo notes -->
+    <div style="margin-top:20px; padding:16px; background:var(--navy-light); border-radius:var(--radius-lg); border:1px solid rgba(255,255,255,0.06);">
+      <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--orange); margin-bottom:10px;">✦ 演算法優化檢查</div>
+      <div>
+        <span class="algo-badge green">✓ 連結放留言區</span>
+        <span class="algo-badge green">✓ 開放式問題 CTA</span>
+        <span class="algo-badge green">✓ 5 個精準 Hashtag</span>
+        <span class="algo-badge green">✓ 技術數據觸發收藏</span>
+        <span class="algo-badge green">✓ 輪播圖提升停留時間</span>
+        <span class="algo-badge orange">⏱ 建議週二 08:00 發布</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE 4: GUIDE + SAMPLE ══════ -->
+<div class="page" id="page3">
+  <div class="section-title">操作說明 <span class="orange">&amp; Sample</span></div>
+  <div class="section-sub">完整系統操作流程 + 真實發文範例，讓 Tachiz 團隊一看就會用。</div>
+
+  <!-- Step by step -->
+  <div class="card">
+    <div class="card-title">系統操作流程</div>
+    <div class="step-flow">
+
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="step-title">輸入 API Key</div>
+          <div class="step-desc">在頁面最上方輸入 Anthropic API Key（由公司統一提供給行銷團隊）。輸入後右側圓點會變綠色，代表 AI 功能已啟用。</div>
+          <div class="prompt-box">
+            <div class="prompt-label">公司 API Key 格式</div>
+            sk-ant-api03-XXXXXXXXXXXXXXXXXXXX<br>
+            <span style="color:var(--gray-400); font-size:12px;">※ 請向行銷主管或 IT 取得，不要公開分享</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="step-title">分頁一：製作輪播圖</div>
+          <div class="step-desc">選擇目標受眾與張數，用自然語言描述主題，按下「AI 生成」即可預覽每張投影片。可選深色或淺色主題。</div>
+          <div class="prompt-box">
+            <div class="prompt-label">範例 Prompt（藍海市場）</div>
+            我想做一份 8 張的輪播圖，針對跨國 FMCG 品牌的 R&D 總監。主題是 Tachiz Tlab 的分子包覆技術（Reverse Spherification），重點強調：<br>
+            1. 傳統珍珠在 RTD / 冷凍 / 酒精環境下的 4 大失敗點<br>
+            2. 我們的技術如何解決（pH 3.5 酸穩定、120°C 耐熱、6 個月保存）<br>
+            3. 商業數據（$1.06B 市場、CAGR 10.7%、66 國出口）<br>
+            4. 最後一張做 CTA，引導索取 Sample Kit<br>
+            配色選深色主題，每頁一個核心重點，要有數據，語言用英文。
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="step-title">分頁二：生成發文文案</div>
+          <div class="step-desc">選擇發文帳號（創辦人 / 業務主管 / R&D 總監），輸入本次發文重點，AI 會根據 2026 LinkedIn 演算法規則生成適合的文案。</div>
+          <div class="prompt-box">
+            <div class="prompt-label">範例 Prompt（藍海發文）</div>
+            以「創辦人」身份，針對全球 FMCG 採購與 R&D 決策者，寫一篇 LinkedIn 文章。<br>
+            重點：分子包覆技術讓爆珠進入 RTD 高毛利市場，強調技術門檻、數據可信度。<br>
+            結尾用開放式問題引發留言互動（texture vs shelf life）。<br>
+            文章長度約 150–200 字，不要在文章內放連結，用繁體中文為主、關鍵術語保留英文。
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="step-title">選擇 Hashtag 與發文時間</div>
+          <div class="step-desc">點選適合的 Hashtag（建議 3–5 個），選擇最佳發文時間（週二/週四 早上 8 點效果最好）。</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <div class="step-title">按「發布」→ 查看結果</div>
+          <div class="step-desc">系統會自動跳到分頁三，展示完整的 LinkedIn 貼文模擬效果，包含輪播圖、互動按鈕、第一則留言 CTA。確認後複製貼文內容到真實 LinkedIn 發布。</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SAMPLE: Full demo -->
+  <div class="card">
+    <div class="card-title">完整發文 Sample（藍海版 · 藍海輪播圖）</div>
+    <div style="font-size:13px; color:var(--gray-400); margin-bottom:20px;">以下是使用本系統的完整發文範例，從 Prompt 到最終結果。</div>
+
+    <!-- Mini LinkedIn post -->
+    <div class="sample-post-mini">
+      <div class="li-header" style="background:white; padding:14px 14px 10px;">
+        <div class="li-avatar" style="width:42px;height:42px;font-size:14px;">CE</div>
+        <div class="li-meta">
+          <div class="li-name" style="font-size:14px;">Tachiz CEO · 創辦人</div>
+          <div class="li-title" style="font-size:11px;">Founder & CEO · Tachiz 泰吉軒實業</div>
+          <div class="li-time" style="font-size:10px;">週二 08:00 · 🌐 全球</div>
+        </div>
+      </div>
+      <div class="li-body" style="background:white; font-size:13px; padding:0 14px 12px;">
+        傳統配料的天花板，不是口味——是<strong>技術相容性</strong>。<br><br>
+        當你的爆珠無法在 RTD 瓶裝飲料中存活 6 個月，你就永遠進不了 FMCG 供應鏈。<br><br>
+        我們用 Reverse Spherification 打破了這道牆。<br><br>
+        ✅ pH 3.5 酸性環境，膜結構完整<br>
+        ✅ 120°C 商業滅菌，RTD 產線相容<br>
+        ✅ 4°C 冷藏 6 個月，不硬化不褪色<br><br>
+        你最大的挑戰是什麼？Texture 還是 Shelf Life？👇<br><br>
+        <span style="color:#0A66C2;">#FoodTech #PoppingBoba #B2BFoodIngredients #FMCG #RTD</span>
+      </div>
+      <!-- Thumbnail grid -->
+      <div class="sample-carousel-grid">
+        <div class="sample-carousel-thumb"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/9.png" alt="1"></div>
+        <div class="sample-carousel-thumb"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/10.png" alt="2"></div>
+        <div class="sample-carousel-thumb"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/11.png" alt="3"></div>
+        <div class="sample-carousel-thumb"><img src="https://adelawen.github.io/tachiz.linkedin.strategy/12.png" alt="4"></div>
+      </div>
+      <div style="background:white; padding:8px 14px; font-size:11px; color:#9A9690; border-top:1px solid #E8E6E0;">
+        ＋ 另外 4 張輪播圖 · 點擊查看完整內容
+      </div>
+      <div style="background:white; padding:6px 14px 8px;">
+        <div style="background:#FFF8F3; border-left:3px solid #E87722; padding:8px 12px; border-radius:0 8px 8px 8px; font-size:12px; color:#1A1814;">
+          <div style="font-size:9px; color:#E87722; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:3px;">📌 第一則留言</div>
+          📥 免費索取 Sample Kit + TDS 技術規格表：<span style="color:#0A66C2;">tachiz.com/sample-request</span>
+        </div>
+      </div>
+      <div style="background:white; padding:6px 14px 12px; display:flex; gap:8px; border-top:1px solid #E8E6E0;">
+        <span style="font-size:12px; color:#5C5850;">👍 ❤️ 💡 127</span>
+        <span style="font-size:12px; color:#9A9690; margin-left:auto;">23 則留言 · 48 次轉發</span>
+      </div>
+    </div>
+
+    <!-- Algo checklist -->
+    <div class="sample-result-note" style="margin-top:16px;">
+      <strong>✦ 此篇貼文的演算法優化說明：</strong><br><br>
+      <strong>連結策略：</strong>貼文內文零連結，Sample Kit 連結只放第一則留言，避免 LinkedIn 因外部連結而降低觸及率。<br><br>
+      <strong>互動誘因：</strong>結尾的「Texture vs Shelf Life？」開放式問題，觸發高價值目標受眾主動留言（留言權重 > 按讚 5 倍）。<br><br>
+      <strong>輪播圖策略：</strong>8 張技術白皮書型輪播圖，利用演算法對「停留時間」的高權重，同時過濾非目標受眾，精準留下 R&D 與採購人員。<br><br>
+      <strong>發文時機：</strong>週二早上 08:00（台灣時間）＝ 歐洲市場剛開始工作，美東市場下班前，全球 B2B 受眾同步活躍。
+    </div>
+
+    <!-- Internal action checklist -->
+    <div style="margin-top:16px; padding:16px; background:rgba(232,119,34,0.05); border:1px solid rgba(232,119,34,0.15); border-radius:var(--radius);">
+      <div style="font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--orange); margin-bottom:12px;">📋 發文後 90 分鐘內行動清單</div>
+      <div style="font-size:13px; line-height:2; color:rgba(255,255,255,0.8);">
+        ☐ &nbsp;創辦人帳號發文後，業務主管在 <strong>30 分鐘內</strong>留下 15 字以上的專業留言<br>
+        ☐ &nbsp;R&D 總監帳號在 <strong>60 分鐘內</strong>留言補充技術觀點<br>
+        ☐ &nbsp;其他同事幫忙按「儲存」（1 次儲存 = 5 倍演算法權重）<br>
+        ☐ &nbsp;不要互相按讚（避免被判定為「互讚團」降權）<br>
+        ☐ &nbsp;發文後 <strong>4 小時內</strong>回覆所有留言，維持留言熱度
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span class="toast-icon">✦</span>
+  <span id="toast-msg">貼文已發布！跳轉至預覽頁面...</span>
+</div>
+
+<script>
+// ── STATE ──
+let currentTheme = 'dark';
+let selectedAccount = { name: 'Tachiz CEO · 創辦人', title: 'Founder & CEO · Tachiz 泰吉軒實業', initials: 'CE' };
+let generatedSlides = [];
+let liIdx = 0;
+const liTotal = 8;
+let liLiked = false, liSaved = false;
+
+// ── API ──
+function getApiKey() { return document.getElementById('apiKey').value.trim(); }
+function checkApiKey() {
+  const k = getApiKey();
+  const s = document.getElementById('apiStatus');
+  s.className = 'api-status' + (k.startsWith('sk-ant') ? ' ok' : '');
+}
+
+async function callClaude(systemPrompt, userPrompt) {
+  const key = getApiKey();
+  if (!key) { alert('請先在上方輸入 API Key'); return null; }
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }]
+    })
+  });
+  if (!res.ok) { alert('API 錯誤：' + res.status + ' 請確認 API Key 是否正確'); return null; }
+  const data = await res.json();
+  return data.content?.[0]?.text || null;
+}
+
+// ── TABS ──
+function switchTab(i) {
+  document.querySelectorAll('.tab-btn').forEach((b,j) => b.className = 'tab-btn' + (i===j?' active':''));
+  document.querySelectorAll('.page').forEach((p,j) => p.className = 'page' + (i===j?' active':''));
+}
+
+// ── THEME ──
+function selectTheme(t) {
+  currentTheme = t;
+  document.getElementById('theme-dark').className = 'theme-opt dark-opt' + (t==='dark'?' selected':'');
+  document.getElementById('theme-light').className = 'theme-opt light-opt' + (t==='light'?' selected':'');
+}
+
+// ── CAROUSEL MAKER ──
+async function generateCarousel() {
+  const prompt = document.getElementById('carousel-prompt').value.trim();
+  const audience = document.getElementById('carousel-audience').value;
+  const count = document.getElementById('carousel-count').value;
+  if (!prompt) { alert('請輸入主題描述'); return; }
+
+  document.getElementById('carousel-loading').style.display = 'flex';
+  document.getElementById('carousel-result').style.display = 'none';
+
+  const system = `你是一位專精於 LinkedIn B2B 行銷的內容策略師，專門為食品科技公司 Tachiz 泰吉軒設計輪播圖內容。
+請嚴格只回傳 JSON 陣列，不要有任何額外文字或 markdown 標記。
+每個物件包含：tag（模組標籤，如 MODULE 1 · MARKET INSIGHTS）、title（主標題）、data（可選的大數字，如 "10.7%"）、body（2-3 行說明文字）。`;
+
+  const userMsg = `目標受眾：${audience}
+張數：${count} 張
+主題：${prompt}
+
+請生成 ${count} 張投影片的內容，回傳純 JSON 陣列格式，例如：
+[{"tag":"MODULE 1 · INTRO","title":"Breaking the Acid Barrier","data":"10.7%","body":"Market growing at 10.7% CAGR. Traditional toppings cannot enter this segment."},...]`;
+
+  const result = await callClaude(system, userMsg);
+  document.getElementById('carousel-loading').style.display = 'none';
+
+  if (!result) return;
+  try {
+    const clean = result.replace(/```json|```/g,'').trim();
+    generatedSlides = JSON.parse(clean);
+    renderSlides();
+    document.getElementById('carousel-result').style.display = 'block';
+  } catch(e) {
+    alert('AI 回應格式有誤，請重試。');
+  }
+}
+
+function renderSlides() {
+  const grid = document.getElementById('slides-grid');
+  grid.innerHTML = '';
+  generatedSlides.forEach((s, i) => {
+    const isDark = currentTheme === 'dark';
+    const el = document.createElement('div');
+    el.className = `slide-preview ${isDark ? 'dark-theme' : 'light-theme'}`;
+    el.innerHTML = `
+      <div class="slide-preview-inner">
+        <div class="sp-tag">${s.tag || 'MODULE ' + (i+1)}</div>
+        <div>
+          ${s.data ? `<div class="sp-data">${s.data}</div>` : ''}
+          <div class="sp-title">${s.title || ''}</div>
+        </div>
+        <div class="sp-body">${s.body || ''}</div>
+        <div class="sp-num">${i+1} / ${generatedSlides.length}</div>
+      </div>`;
+    grid.appendChild(el);
+  });
+}
+
+function sendToPost() {
+  showToast('輪播圖已帶入發文系統！');
+  switchTab(1);
+}
+
+// ── POST SYSTEM ──
+function selectAccount(el, name, title, initials) {
+  document.querySelectorAll('.account-card').forEach(c => c.className = 'account-card');
+  el.className = 'account-card selected';
+  selectedAccount = { name, title, initials };
+}
+
+async function generatePostCopy() {
+  const brief = document.getElementById('post-brief').value.trim();
+  if (!brief) { alert('請先輸入發文重點'); return; }
+
+  document.getElementById('post-loading').style.display = 'flex';
+
+  const system = `你是 LinkedIn B2B 內容策略師，專為食品科技公司 Tachiz 泰吉軒撰寫貼文。
+遵循 2026 LinkedIn 演算法規則：
+- 前兩行必須有強力 Hook，不透露完整答案
+- 內文不放任何連結
+- 結尾必須有開放式問題引發留言
+- 加入技術數據提升收藏率
+- 字數 150-200 字
+- 語言：繁體中文為主，關鍵技術詞保留英文
+只回傳貼文內文本身，不要加任何說明。`;
+
+  const result = await callClaude(system,
+    `發文帳號：${selectedAccount.name}\n發文重點：${brief}`);
+  document.getElementById('post-loading').style.display = 'none';
+  if (result) document.getElementById('post-copy').value = result;
+}
+
+function toggleHashtag(el) {
+  el.className = el.className.includes('selected') ?
+    'hashtag-chip' : 'hashtag-chip selected';
+}
+
+function selectTime(el) {
+  document.querySelectorAll('.time-slot').forEach(t => t.className = 'time-slot');
+  el.className = 'time-slot selected';
+}
+
+function publishPost() {
+  const copy = document.getElementById('post-copy').value.trim();
+  const cta = document.getElementById('post-cta').value.trim();
+
+  // Update page 3
+  document.getElementById('li-avatar').textContent = selectedAccount.initials;
+  document.getElementById('li-name').textContent = selectedAccount.name;
+  document.getElementById('li-title').textContent = selectedAccount.title;
+
+  if (copy) {
+    const tags = Array.from(document.querySelectorAll('.hashtag-chip.selected'))
+      .map(h => `<span class="tag">${h.textContent}</span>`).join(' ');
+    document.getElementById('li-body').innerHTML =
+      copy.replace(/\n/g, '<br>') + '<br><br>' + tags;
+  }
+  if (cta) {
+    document.getElementById('li-cta-text').innerHTML =
+      cta + '<br><span style="color:#9A9690;font-size:12px;">（連結放留言區，避免演算法降權）</span>';
+  }
+
+  showToast('貼文已發布！跳轉至預覽頁面...');
+  setTimeout(() => switchTab(2), 800);
+}
+
+// ── LINKEDIN MOCK ──
+function liSlide(dir) {
+  liIdx = Math.max(0, Math.min(liTotal - 1, liIdx + dir));
+  document.getElementById('li-track').style.transform = `translateX(-${liIdx * 100}%)`;
+  document.getElementById('li-prev').disabled = liIdx === 0;
+  document.getElementById('li-next').disabled = liIdx === liTotal - 1;
+  document.getElementById('li-progress-bar').style.width = ((liIdx + 1) / liTotal * 100) + '%';
+  renderLiDots();
+}
+
+function renderLiDots() {
+  const c = document.getElementById('li-dots');
+  c.innerHTML = '';
+  for (let i = 0; i < liTotal; i++) {
+    const d = document.createElement('div');
+    d.className = 'li-dot' + (i === liIdx ? ' active' : '');
+    d.onclick = () => { liIdx = i - 1; liSlide(1); if (i === 0) { liIdx = 0; liSlide(0); } };
+    c.appendChild(d);
+  }
+}
+
+function toggleLiLike() {
+  liLiked = !liLiked;
+  const btn = document.getElementById('btn-like');
+  btn.className = 'li-action' + (liLiked ? ' liked' : '');
+  btn.textContent = liLiked ? '👍 已讚' : '👍 讚';
+  document.getElementById('like-count').textContent = 127 + (liLiked ? 1 : 0);
+}
+function toggleLiSave() {
+  liSaved = !liSaved;
+  const btn = document.getElementById('btn-save');
+  btn.className = 'li-action' + (liSaved ? ' saved' : '');
+  btn.textContent = liSaved ? '🔖 已儲存' : '🔖 儲存';
+}
+function focusLiComment() { document.getElementById('li-comment-input').focus(); }
+function submitLiComment(e) { if (e.key === 'Enter') sendLiComment(); }
+function sendLiComment() {
+  const input = document.getElementById('li-comment-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const list = document.getElementById('li-comment-list');
+  const row = document.createElement('div');
+  row.className = 'li-comment-row';
+  row.innerHTML = `<div class="li-comment-avatar" style="background:#E8E6E0;color:#5C5850;">你</div>
+    <div><div class="li-comment-bubble">${text}</div></div>`;
+  list.appendChild(row);
+  input.value = '';
+  row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast show';
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ── INIT ──
+renderLiDots();
+</script>
+</body>
+</html>
